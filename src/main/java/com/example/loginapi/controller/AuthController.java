@@ -6,13 +6,16 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import com.example.loginapi.models.Cargo;
+import com.example.loginapi.models.EmailDetails;
 import com.example.loginapi.models.EnumCargo;
 import com.example.loginapi.models.Usuario;
 import com.example.loginapi.payload.request.LoginRequest;
+import com.example.loginapi.payload.request.PasswordRequest;
 import com.example.loginapi.payload.request.SignupRequest;
 import com.example.loginapi.payload.response.JwtResponse;
 import com.example.loginapi.payload.response.MessageResponse;
 import com.example.loginapi.repository.CargoRepository;
+import com.example.loginapi.repository.EmailServiceImpl;
 import com.example.loginapi.repository.UsuarioRepository;
 import com.example.loginapi.repository.security.jwt.JwtUtils;
 import com.example.loginapi.repository.security.services.UserDetailsImpl;
@@ -79,13 +82,13 @@ public class AuthController {
 
 
     @PostMapping("/registro")
-    public ResponseEntity<?> registerUser(@Valid @RequestBody SignupRequest signupRequest){
+    public ResponseEntity<?> registerUser(@Valid @RequestBody SignupRequest signupRequest) {
 
-        if(usuarioRepository.existsByUsername(signupRequest.getUsername())){
+        if (usuarioRepository.existsByUsername(signupRequest.getUsername())) {
             return ResponseEntity.badRequest().body(new MessageResponse("Usuário já está em uso!"));
         }
 
-        if(usuarioRepository.existsByEmail(signupRequest.getEmail())){
+        if (usuarioRepository.existsByEmail(signupRequest.getEmail())) {
             return ResponseEntity.badRequest().body(new MessageResponse("Email já está em uso"));
         }
 
@@ -127,16 +130,37 @@ public class AuthController {
         usuarioRepository.save(usuario);
 
 
-
         return ResponseEntity.ok(new MessageResponse("Registro bem sucedido"));
     }
 
 
     @PostMapping("/Logout")
-    public ResponseEntity<?> logout(){
+    public ResponseEntity<?> logout() {
         ResponseCookie cookie = jwtUtils.getCleanJwtCookie();
         return ResponseEntity.ok().header(HttpHeaders.SET_COOKIE, cookie.toString())
                 .body(new MessageResponse("Deslogado"));
     }
 
+    @Autowired
+    private EmailServiceImpl emailService;
+
+    @PostMapping("/esqueciSenha")
+    public String enviarEmail(@RequestBody EmailDetails emailDetails) {
+        String status = emailService.enviarEmail(emailDetails);
+        return status;
+
+    }
+
+
+    @PostMapping("/reset")
+    public ResponseEntity<?> resetPassword(@RequestBody PasswordRequest passwordRequest) {
+        Usuario usuario = usuarioRepository.findByEmail(passwordRequest.getEmail())
+                .orElseThrow(() -> new RuntimeException("Usuario não encontrado"));
+        usuario.setPassword(encoder.encode(passwordRequest.getPassword()));
+        usuarioRepository.save(usuario);
+
+        return ResponseEntity.ok(new MessageResponse("Senha alterada com sucesso!"));
+
+
+    }
 }
