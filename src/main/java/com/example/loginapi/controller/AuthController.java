@@ -9,6 +9,7 @@ import com.example.loginapi.models.Cargo;
 import com.example.loginapi.models.EnumCargo;
 import com.example.loginapi.models.Usuario;
 import com.example.loginapi.payload.request.LoginRequest;
+import com.example.loginapi.payload.request.PasswordRequest;
 import com.example.loginapi.payload.request.SignupRequest;
 import com.example.loginapi.payload.response.JwtResponse;
 import com.example.loginapi.payload.response.MessageResponse;
@@ -137,6 +138,16 @@ public class AuthController {
         ResponseCookie cookie = jwtUtils.getCleanJwtCookie();
         return ResponseEntity.ok().header(HttpHeaders.SET_COOKIE, cookie.toString())
                 .body(new MessageResponse("Deslogado"));
+    }
+
+    @PostMapping("/reset")
+    public ResponseEntity<?> resetPassword(@RequestBody PasswordRequest passwordRequest){
+        Usuario usuario = usuarioRepository.findByEmail(passwordRequest.getEmail())
+                .orElseThrow(() -> new RuntimeException("Usuario não encontrado"));
+        usuario.setPassword(encoder.encode(passwordRequest.getPassword()));
+        usuarioRepository.save(usuario);
+
+        return ResponseEntity.ok(new MessageResponse("Senha alterada com sucesso!"));
     }
 
 }
