@@ -6,6 +6,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import com.example.loginapi.models.Cargo;
+import com.example.loginapi.models.EmailDetails;
 import com.example.loginapi.models.EnumCargo;
 import com.example.loginapi.models.Usuario;
 import com.example.loginapi.payload.request.LoginRequest;
@@ -14,6 +15,7 @@ import com.example.loginapi.payload.request.SignupRequest;
 import com.example.loginapi.payload.response.JwtResponse;
 import com.example.loginapi.payload.response.MessageResponse;
 import com.example.loginapi.repository.CargoRepository;
+import com.example.loginapi.repository.EmailServiceImpl;
 import com.example.loginapi.repository.UsuarioRepository;
 import com.example.loginapi.repository.security.jwt.JwtUtils;
 import com.example.loginapi.repository.security.services.UserDetailsImpl;
@@ -140,6 +142,17 @@ public class AuthController {
                 .body(new MessageResponse("Deslogado"));
     }
 
+    @Autowired
+    private EmailServiceImpl emailService;
+
+    @PostMapping("/esqueciSenha")
+    public String enviarEmail(@RequestBody EmailDetails emailDetails){
+        String status = emailService.enviarEmail(emailDetails);
+        return status;
+
+    }
+
+
     @PostMapping("/reset")
     public ResponseEntity<?> resetPassword(@RequestBody PasswordRequest passwordRequest){
         Usuario usuario = usuarioRepository.findByEmail(passwordRequest.getEmail())
@@ -148,6 +161,6 @@ public class AuthController {
         usuarioRepository.save(usuario);
 
         return ResponseEntity.ok(new MessageResponse("Senha alterada com sucesso!"));
-    }
 
-}
+
+    }
