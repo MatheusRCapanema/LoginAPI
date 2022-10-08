@@ -13,7 +13,7 @@
 - PostgreSQL(Login e senha devem ser alterados em application.properties para funcionar)
 - SpringBoot
 - JDK 18
--Necessário rodar este comando sql para que seja possível a implementação dos cargos:
+- Necessário rodar este comando sql para que seja possível a implementação dos cargos:
 
 ```
 INSERT INTO cargo("name") VALUES('CARGO_USUARIO');
